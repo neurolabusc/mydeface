@@ -1,6 +1,10 @@
 ## About
 
-Sharing data allows reproducibility and reuse. However, medical images can expose facial features that allow identification. This is a defacing utility for MRI images inspired by [pydeface](https://github.com/poldracklab/pydeface). Both tools use FSL's [FLIRT](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FLIRT) to mask regions outside the skull. mydeface differs in a minor ways:
+Sharing data allows reproducibility and reuse. However, medical images can expose facial features that allow identification. 
+
+![Deface rendering](deface.jpg)
+
+This is a defacing utility for MRI images inspired by [pydeface](https://github.com/poldracklab/pydeface). Both tools use FSL's [FLIRT](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FLIRT) to mask regions outside the skull. mydeface differs in a minor ways:
 
   - The `normmi` normalized mutual information cost function is a bit more robust.
   - While pydeface strips regions around the nose and eyes, mydeface expands this and strips all signal outside a narrowly defined scalp. This influences recognition of ear shape. Further, as excess neck and scalp fat are removed this can aid subsequent analyses. Further, ghosting images of facial features are removed from the air. However, since all these external features are set to zero, this can impact some segmentation tools that use the variability in the air signal to estimate noise variance (e.g. Gaussian mixture models for earlier versions of SPM). Likewise, this may impact the performance of homogeneity biased intensity correction. Tools should use implicit zero masking.
