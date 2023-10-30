@@ -1,5 +1,5 @@
 function names = nii_deface(job)
-% extends nii_deface to remove excess neck
+% extends nii_deface to remove excess neck and face details
 % Face strip images
 % FORMAT names = spm_deface(job)
 % job.images   - cell array of NIfTI file names
@@ -30,17 +30,40 @@ for i=1:numel(P)
 end
 
 function fname = deface(P,tpm)
-nul     = [0 -1.1 0.98 100];
 M       = spm_maff8(P,4,20,tpm,[],'mni');
 Nii     = nifti(P);
 d       = [size(Nii.dat) 1];
 [i,j,k] = ndgrid(1:d(1),1:d(2),1:d(3));
+nul     = [0 -1.1 0.98 115];
 nul1    = nul*M*Nii.mat;
 msk     = nul1(1)*i + nul1(2)*j + nul1(3)*k + nul1(4) < 0;
 % add a second plane to remove excess neck
 nul     = [0 0 1 90];
 nul1    = nul*M*Nii.mat;
 msk2     = nul1(1)*i + nul1(2)*j + nul1(3)*k + nul1(4) < 0;
+msk = max(msk, msk2);
+% add a third plane to remove left ear
+nul     = [1 0 0 80];
+nul1    = nul*M*Nii.mat;
+msk2     = nul1(1)*i + nul1(2)*j + nul1(3)*k + nul1(4) < 0;
+msk = max(msk, msk2);
+% add a fourth plane to remove right ear
+nul     = [-1 0 0 80];
+nul1    = nul*M*Nii.mat;
+msk2     = nul1(1)*i + nul1(2)*j + nul1(3)*k + nul1(4) < 0;
+msk = max(msk, msk2);
+% create two masks to remove jaw
+% msk inferior removes signal near feet
+nul     = [0 0 1 45];
+nul1    = nul*M*Nii.mat;
+mskInferior     = nul1(1)*i + nul1(2)*j + nul1(3)*k + nul1(4) < 0;
+% msk anterior removes signal near the nose
+nul     = [0 -1.3 0.8 60];
+nul1    = nul*M*Nii.mat;
+mskAnterior     = nul1(1)*i + nul1(2)*j + nul1(3)*k + nul1(4) < 0;
+% remove intersection of foot and nose removal
+msk2 = min(mskInferior, mskAnterior);
+% combine compound jaw mask to others:
 msk = max(msk, msk2);
 
 % Ensure anything that may reveal identity is not included in the face-stripped
